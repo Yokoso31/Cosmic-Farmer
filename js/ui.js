@@ -7,6 +7,7 @@ export function initUI(gameActions) {
     actions = gameActions;
     initStars();
     bindGlobalEvents();
+    switchTab('farm');
 }
 
 function bindGlobalEvents() {
@@ -17,7 +18,8 @@ function bindGlobalEvents() {
     const btnClicker = document.getElementById('clicker-btn');
     if (btnClicker) btnClicker.addEventListener('click', actions.clickMain);
 
-    const btnRefill = document.querySelector('#water-panel button');
+    // I added ID 'btn-refill-water' in the previous step to be safe, but querySelector works too
+    const btnRefill = document.getElementById('btn-refill-water');
     if (btnRefill) btnRefill.addEventListener('click', actions.refillWater);
 
     const btnTravel = document.getElementById('btn-travel');
@@ -25,25 +27,15 @@ function bindGlobalEvents() {
 
     const btnReset = document.getElementById('btn-reset-save');
     if (btnReset) {
-        // Remove the inline onclick attribute to avoid conflict/confusion, though it might still be there in HTML
-        btnReset.removeAttribute('onclick');
         btnReset.addEventListener('click', actions.resetSave);
     }
 
     // Bind tabs
     const tabBtns = document.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => {
-        // Extract tab name from onclick attribute or data attribute if we change HTML
-        // For now, let's assume we clean up HTML and use data-tab
-        // Or parse the existing onclick="switchTab('farm')"
-        const onclickAttr = btn.getAttribute('onclick');
-        if (onclickAttr) {
-            const match = onclickAttr.match(/'([^']+)'/);
-            if (match) {
-                const tabName = match[1];
-                btn.removeAttribute('onclick');
-                btn.addEventListener('click', () => switchTab(tabName));
-            }
+        const tabName = btn.getAttribute('data-tab');
+        if (tabName) {
+            btn.addEventListener('click', () => switchTab(tabName));
         }
     });
 }
@@ -132,10 +124,6 @@ let currentTab = 'farm';
 export function switchTab(t) {
     currentTab = t;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    // Find button by checking text or other attributes since onclick is removed
-    // But we attached listeners in bindGlobalEvents so this function is called.
-    // We need to highlight the correct button.
-    // Let's assume we add data-tab attribute in HTML update.
     const activeBtn = document.querySelector(`.tab-btn[data-tab="${t}"]`);
     if (activeBtn) activeBtn.classList.add('active');
 
@@ -174,15 +162,6 @@ function renderShopStructure() {
             </div>
         </div>`;
         c.appendChild(pDiv);
-
-        // Bind prestige click after creation
-        setTimeout(() => {
-             let btn = document.getElementById('btn-prestige');
-             if(btn) {
-                 // Logic handled in updateShopState mostly, but we need initial bind?
-                 // Actually updateShopState overwrites onclick.
-             }
-        }, 0);
     }
     else if (currentTab === 'companions') {
         ['drone', 'fairy', 'probe'].forEach(type => {
@@ -243,9 +222,6 @@ export function updateShopState() {
          let btn = document.getElementById('btn-prestige');
          if(btn) {
              document.getElementById('prestige-desc').innerText = `Gagner ${gain} ⭐ (+${gain*10}%)`;
-             // We need to re-bind onclick because we might want to update the gain in the closure?
-             // Or just pass the current gain to actions.tryPrestige(gain)
-             // Ideally actions.tryPrestige should calculate gain itself to be safe.
              btn.onclick = () => actions.tryPrestige();
              if(gain > 0) btn.classList.remove('disabled');
              else btn.classList.add('disabled');
@@ -329,10 +305,6 @@ function renderCodex() {
 }
 
 export function updateUI() {
-    // Recalc Max Energy (logic here or in game? visual so okay here for display, but maxEnergy state is used in logic)
-    // Actually game logic should update maxEnergy in state before UI reads it.
-    // We'll read from game object.
-
     document.getElementById('money').innerText = Math.floor(game.money);
     document.getElementById('biomass').innerText = Math.floor(game.biomass);
     document.getElementById('energy').innerText = Math.floor(game.energy);

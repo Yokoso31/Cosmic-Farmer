@@ -38,7 +38,7 @@
         <div id="water-panel" style="display:none; margin-bottom:15px;">
              <div style="font-size:0.9rem; color:#3498db; margin-bottom:5px;">💧 Eau (Mars)</div>
              <div class="progress-wrap" style="height:8px; margin:5px 0;"><div class="progress-fill" id="water-level" style="background:#3498db; width:100%; box-shadow:none;"></div></div>
-             <button style="width:100%; font-size:0.8rem; background:rgba(52, 152, 219, 0.2); border:1px solid #3498db; color:#3498db; cursor:pointer; padding:5px; border-radius:4px;">Remplir (10⚡)</button>
+             <button id="btn-refill-water" style="width:100%; font-size:0.8rem; background:rgba(52, 152, 219, 0.2); border:1px solid #3498db; color:#3498db; cursor:pointer; padding:5px; border-radius:4px;">Remplir (10⚡)</button>
         </div>
         <div class="stat-row" title="Cycle Jour/Nuit">
             <span><span class="stat-icon" id="cycle-icon">☀️</span>Cycle</span>
@@ -78,12 +78,12 @@
     <!-- RIGHT: Shop & Upgrades -->
     <div id="col-right" class="panel">
         <div class="tabs">
-            <button class="tab-btn active" data-tab="farm" onclick="switchTab('farm')">Ferme</button>
-            <button class="tab-btn" data-tab="tech" onclick="switchTab('tech')">Tech</button>
-            <button class="tab-btn" data-tab="space" onclick="switchTab('space')">Espace</button>
-            <button class="tab-btn" data-tab="companions" onclick="switchTab('companions')">Robots</button>
-            <button class="tab-btn" data-tab="dna" onclick="switchTab('dna')">ADN</button>
-            <button class="tab-btn" data-tab="codex" onclick="switchTab('codex')">Codex</button>
+            <button class="tab-btn active" data-tab="farm">Ferme</button>
+            <button class="tab-btn" data-tab="tech">Tech</button>
+            <button class="tab-btn" data-tab="space">Espace</button>
+            <button class="tab-btn" data-tab="companions">Robots</button>
+            <button class="tab-btn" data-tab="dna">ADN</button>
+            <button class="tab-btn" data-tab="codex">Codex</button>
         </div>
 
         <div id="shop-content">
