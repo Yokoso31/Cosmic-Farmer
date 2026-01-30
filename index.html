@@ -12,6 +12,38 @@
 <div id="nebula-bg"></div>
 <div id="drone-layer"></div>
 
+<!-- Error Warning for File Protocol -->
+<div id="error-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px;">
+    <h1 style="color:#e74c3c;">ERREUR DE CHARGEMENT</h1>
+    <p style="color:white; font-size:1.2rem; max-width:600px;">
+        Le jeu ne peut pas démarrer car les modules JavaScript sont bloqués par votre navigateur (CORS Policy).
+    </p>
+    <p style="color:#bdc3c7;">
+        Si vous avez ouvert ce fichier directement (file://), veuillez utiliser un serveur local.
+    </p>
+    <div style="background:#2c3e50; padding:15px; border-radius:5px; text-align:left; margin-top:20px;">
+        <code style="color:#2ecc71;">python3 -m http.server</code><br>
+        <span style="color:#95a5a6; font-size:0.9rem;">(Puis ouvrez http://localhost:8000)</span>
+    </div>
+</div>
+
+<script>
+    // Detect if modules fail to load
+    window.addEventListener('error', function(e) {
+        // If error is related to module loading (CORS)
+        if(e.message.includes("module") || e.message.includes("CORS") || !window.gameStarted) {
+             // We can't be 100% sure it's CORS from here, but if game hasn't started after a timeout...
+        }
+    }, true);
+
+    // Fallback timeout
+    setTimeout(() => {
+        if(!window.gameStarted) {
+            document.getElementById('error-overlay').style.display = 'flex';
+        }
+    }, 1000);
+</script>
+
 <h1>COSMIC FARMER</h1>
 
 <div id="main-wrapper">
