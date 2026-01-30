@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Cosmic Farmer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET & BASE --- */
+        :root {
+            --color-bg: #05070a;
+            --color-panel: rgba(16, 24, 35, 0.8);
+            --color-border: rgba(64, 224, 208, 0.3);
+            --color-primary: #00f3ff;
+            --color-secondary: #bc13fe;
+            --color-accent: #ffd700;
+            --color-danger: #ff0055;
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Roboto', sans-serif;
+            --glow-primary: 0 0 10px rgba(0, 243, 255, 0.5);
+            --glow-text: 0 0 5px rgba(0, 243, 255, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg);
+            color: #ecf0f1;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- ANIMATED BACKGROUND --- */
+        #star-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #05070a 100%);
+        }
+        #nebula-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(188, 19, 254, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(0, 243, 255, 0.1) 0%, transparent 40%);
+            animation: nebulaPulse 10s infinite alternate;
+        }
+        @keyframes nebulaPulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            opacity: 0;
+        }
+        @keyframes twinkle { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0.5); } }
+
+        /* --- LAYOUT --- */
+        #main-wrapper {
+            display: flex;
+            gap: 20px;
+            width: 95%;
+            max-width: 1400px;
+            margin: 20px auto;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .panel {
+            background: var(--color-panel);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 243, 255, 0.02);
+            transition: border-color 0.3s;
+        }
+        .panel:hover {
+            border-color: rgba(64, 224, 208, 0.6);
+        }
+
+        /* Columns */
+        #col-left { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; order: 1; }
+        #col-center { flex: 2; min-width: 350px; order: 2; }
+        #col-right { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; order: 3; }
+
+        @media (max-width: 1000px) {
+            #col-center { order: 1; width: 100%; flex: none; }
+            #col-left { order: 2; }
+            #col-right { order: 3; }
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            margin: 0 0 15px 0;
+            color: var(--color-primary);
+            text-shadow: var(--glow-primary);
+            letter-spacing: 1px;
+        }
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            width: 100%;
+            margin: 30px 0;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 0 10px rgba(0,243,255,0.3));
+        }
+        .currency { color: var(--color-accent); font-weight: bold; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+
+        /* --- COMPONENTS --- */
+
+        /* Header Stats */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .stat-icon { margin-right: 10px; font-size: 1.3rem; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+
+        /* Big Clicker */
+        #clicker-container {
+            display: flex; justify-content: center; padding: 50px;
+        }
+        #clicker-btn {
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.1) 0%, rgba(0,0,0,0.8) 70%);
+            border: 2px solid var(--color-primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            z-index: 10;
+        }
+        #clicker-btn:hover {
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.4), inset 0 0 30px rgba(0, 243, 255, 0.3);
+            transform: scale(1.05);
+        }
+        #clicker-btn:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+
+        /* Rotating Rings */
+        #clicker-btn::before {
+            content: ''; position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px;
+            border-radius: 50%; border: 2px dashed rgba(188, 19, 254, 0.4);
+            animation: spinReverse 15s linear infinite;
+            z-index: -1;
+        }
+        #clicker-btn::after {
+            content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+            border-radius: 50%; border: 1px solid rgba(0, 243, 255, 0.3);
+            border-left-color: transparent; border-right-color: transparent;
+            animation: spin 8s linear infinite;
+            z-index: -1;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spinReverse { 100% { transform: rotate(-360deg); } }
+
+        /* Grid */
+        #farm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .plot {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .plot:hover { border-color: var(--color-primary); box-shadow: 0 0 10px rgba(0,243,255,0.2); transform: translateY(-2px); }
+
+        .plant-bar {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, var(--plant-color) 0%, rgba(0,0,0,0) 120%);
+            height: 0%;
+            transition: height 0.1s linear;
+            opacity: 0.8;
+            box-shadow: 0 -5px 15px var(--plant-color);
+        }
+        .plant-icon {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 28px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+            text-shadow: 0 0 10px black;
+        }
+        .plot.ready { border-color: var(--color-accent); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        .plot.ready .plant-icon { transform: translate(-50%, -50%) scale(1.3); }
+
+        .plot.blocked { background: rgba(255,0,0,0.1); border-color: var(--color-danger); }
+
+        /* Tabs / Shop */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); gap: 5px; flex-wrap: wrap;}
+        .tab-btn {
+            background: rgba(255,255,255,0.05); border: none; color: #7f8c8d;
+            padding: 10px 20px; cursor: pointer; font-family: var(--font-display);
+            border-radius: 5px 5px 0 0;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .tab-btn.active {
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            text-shadow: 0 0 8px var(--color-primary);
+        }
+
+        .shop-item {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .shop-item::before {
+            content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: transparent; transition: 0.2s;
+        }
+        .shop-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+        }
+        .shop-item:hover::before { background: var(--color-primary); }
+
+        .shop-item.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+        .shop-item.disabled:hover { transform: none; border-color: transparent; }
+
+        .item-info { display: flex; flex-direction: column; }
+        .item-name { font-weight: bold; font-size: 1rem; color: #fff; margin-bottom: 4px; }
+        .item-desc { font-size: 0.8rem; color: #bdc3c7; }
+        .item-cost {
+            background: rgba(0,0,0,0.3);
+            color: var(--color-accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Dimension Bar */
+        #dim-panel { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .progress-wrap { background: rgba(0,0,0,0.6); height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width: 0%; transition: width 0.5s; box-shadow: 0 0 10px var(--color-primary); }
+
+        /* General Buttons */
+        button { font-family: var(--font-display); transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Effects */
+        .float-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1.2s forwards;
+            z-index: 100;
+            text-shadow: 0 0 3px black;
+            font-size: 1.2rem;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+        /* Companion Layer */
+        #drone-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 5;
+        }
+        .companion-unit {
+            position: absolute;
+            font-size: 24px;
+            transition: left 5s linear, top 5s linear;
+        }
+
+        /* Drone Orbit */
+        #drone-orbit-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .drone-satellite {
+            position: absolute;
+            top: 0; left: 0;
+            width: 240px; height: 240px; /* Orbit diameter */
+            margin-left: -120px; margin-top: -120px;
+            animation: orbit 10s linear infinite;
+        }
+        .drone-body {
+            position: absolute;
+            top: 0; left: 50%;
+            width: 30px; height: 30px;
+            margin-left: -15px; margin-top: -15px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            animation: counter-orbit 10s linear infinite; /* Keep icon upright */
+        }
+        @keyframes orbit {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes counter-orbit {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="star-bg"></div>
+<div id="nebula-bg"></div>
+<div id="drone-layer"></div>
+
+<h1>COSMIC FARMER</h1>
+
+<div id="main-wrapper">
+
+    <!-- LEFT: Player Stats & Clicker -->
+    <div id="col-left" class="panel">
+        <h2>Dashboard</h2>
+
+        <div class="stat-row">
+            <span><span class="stat-icon">💰</span>Crédits</span>
+            <span class="currency" id="money">0</span>
+        </div>
+        <div class="stat-row">
+            <span><span class="stat-icon">🧬</span>Biomasse</span>
+            <span style="color:#bc13fe; font-weight:bold; text-shadow: 0 0 5px #bc13fe;" id="biomass">0</span>
+        </div>
+        <div style="margin-bottom:15px;">
+            <button id="btn-mode" onclick="toggleMode()" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid #f1c40f; color:white; padding:10px; cursor:pointer; border-radius:5px; font-weight:bold;">Mode: 💰 Crédits</button>
+        </div>
+        <div class="stat-row">
+            <span><span class="stat-icon">⚡</span>Énergie</span>
+            <span><span id="energy">100</span> / <span id="max-energy">100</span></span>
+        </div>
+        <div id="water-panel" style="display:none; margin-bottom:15px;">
+             <div style="font-size:0.9rem; color:#3498db; margin-bottom:5px;">💧 Eau (Mars)</div>
+             <div class="progress-wrap" style="height:8px; margin:5px 0;"><div class="progress-fill" id="water-level" style="background:#3498db; width:100%; box-shadow:none;"></div></div>
+             <button onclick="refillWater()" style="width:100%; font-size:0.8rem; background:rgba(52, 152, 219, 0.2); border:1px solid #3498db; color:#3498db; cursor:pointer; padding:5px; border-radius:4px;">Remplir (10⚡)</button>
+        </div>
+        <div class="stat-row" title="Cycle Jour/Nuit">
+            <span><span class="stat-icon" id="cycle-icon">☀️</span>Cycle</span>
+            <span id="cycle-text">Jour</span>
+        </div>
+        <div class="progress-wrap" style="height:6px; margin-bottom:15px; background:rgba(255,255,255,0.1);">
+            <div class="progress-fill" id="cycle-bar" style="background: linear-gradient(90deg, #f39c12, #2c3e50);"></div>
+        </div>
+        <div class="stat-row" title="Bonus Prestige">
+            <span><span class="stat-icon">⭐</span>Prestige</span>
+            <span style="color:#e74c3c; text-shadow: 0 0 5px #e74c3c;" id="prestige">0</span>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+        <div id="clicker-container" style="position:relative;">
+            <div id="drone-orbit-container"></div>
+            <div id="clicker-btn" onclick="clickMain(event)">
+                <span id="current-icon">🌿</span>
+            </div>
+        </div>
+        <div style="text-align:center; color:#7f8c8d; font-size:0.8rem;">Cliquer pour récolter</div>
+    </div>
+
+    <!-- CENTER: Farm Grid -->
+    <div id="col-center" class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>Ferme <span id="dim-name" style="color:var(--color-primary); font-size:1.2rem;">(Terre)</span></h2>
+            <span style="font-size:0.9rem; color:#bdc3c7;"><span id="plot-count">0</span> Parcelles</span>
+        </div>
+
+        <div id="farm-grid">
+            <!-- Plots inserted via JS -->
+        </div>
+    </div>
+
+    <!-- RIGHT: Shop & Upgrades -->
+    <div id="col-right" class="panel">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('farm')">Ferme</button>
+            <button class="tab-btn" onclick="switchTab('tech')">Tech</button>
+            <button class="tab-btn" onclick="switchTab('space')">Espace</button>
+            <button class="tab-btn" onclick="switchTab('companions')">Robots</button>
+            <button class="tab-btn" onclick="switchTab('dna')">ADN</button>
+            <button class="tab-btn" onclick="switchTab('codex')">Codex</button>
+        </div>
+
+        <div id="shop-content">
+            <!-- Dynamic Content -->
+        </div>
+
+        <div id="dim-panel">
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:8px;">
+                <span>Voyage : <span id="next-dim" style="color:var(--color-primary)">Mars</span></span>
+                <span id="dim-cost" style="color:var(--color-accent)">200💰</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" id="dim-bar"></div></div>
+            <button id="btn-travel" class="shop-item" style="width:100%; justify-content:center; background:linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color:#fff; font-weight:bold; display:none; border:none; margin-top:10px; text-shadow:0 0 5px black;" onclick="travel()">DÉCOLLAGE 🚀</button>
+        </div>
+
+        <div style="margin-top:20px; text-align:center;">
+             <button onclick="resetSave()" style="background:transparent; border:1px solid #c0392b; color:#c0392b; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.7rem; opacity:0.6;">Reset Save</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const CONFIG = {
+        dims: [
+            { name: "Terre", click: 1, auto: 5, color: '#2ecc71', icon: '🌿', cost: 0, trait: null },
+            { name: "Lune", click: 3, auto: 15, color: '#bdc3c7', icon: '🌑', cost: 500, trait: 'night_bloom' },
+            { name: "Mars", click: 5, auto: 25, color: '#e67e22', icon: '🌵', cost: 1000, trait: 'water' },
+            { name: "Jupiter", click: 20, auto: 100, color: '#e74c3c', icon: '🍄', cost: 50000, trait: 'gravity' },
+            { name: "Saturne", click: 100, auto: 500, color: '#f1c40f', icon: '💍', cost: 1000000, trait: 'asteroids' },
+            { name: "Nébuleuse", click: 500, auto: 2500, color: '#9b59b6', icon: '🌫️', cost: 5000000, trait: 'energy_link' },
+            { name: "Trou Noir", click: 10000, auto: 50000, color: '#2c3e50', icon: '🕳️', cost: 100000000, trait: 'time_dilation' }
+        ],
+        upgrades: {
+            click: { name: "Outils Laser", desc: "+1 Crédit/Clic", base: 50, mult: 1.5, effect: 1 },
+            auto: { name: "Bio-Drones", desc: "+2 Crédit/Auto", base: 100, mult: 1.5, effect: 2 },
+            energy: { name: "Panneaux Solaires", desc: "+1 Énergie/sec", base: 300, mult: 1.4, effect: 1 },
+            speed: { name: "Nano-Engrais", desc: "-5% Temps de pousse", base: 500, mult: 1.6, effect: 0.95 },
+            crit: { name: "Trèfle Quantique", desc: "+5% Chance Critique (x3)", base: 750, mult: 1.7, effect: 0.05 },
+            efficiency: { name: "Gestion Énergie", desc: "-10% Conso Énergie", base: 1000, mult: 1.8, effect: 0.9 },
+            max_energy: { name: "Batterie Plasma", desc: "+50 Max Énergie", base: 2000, mult: 1.5, effect: 50 },
+            // DNA Upgrades (Cost Biomass)
+            mycelium: { name: "Réseau Mycélium", desc: "+10% Prod / Voisin", base: 10, mult: 1.5, effect: 0.1, currency: 'biomass' },
+            terraforming: { name: "Terraformation", desc: "+20% Prod Global", base: 50, mult: 1.8, effect: 0.2, currency: 'biomass' },
+            gmo: { name: "Super OGM", desc: "x2 Prod Base", base: 100, mult: 2, effect: 1, currency: 'biomass' }
+        },
+        companions: {
+            drone: { name: "Drone-X", desc: "Clic Auto (5s)", base: 2000, mult: 1.5, icon: '🤖', type: 'auto_click' },
+            fairy: { name: "Fée Cosmique", desc: "-2% Temps Pousse", base: 200, mult: 1.5, icon: '🧚', currency: 'biomass', type: 'growth_aura' },
+            probe: { name: "Sonde Rare", desc: "+0.5% Chance Rare", base: 5000, mult: 1.8, icon: '🛰️', type: 'luck_aura' }
+        }
+    };
+
+    // --- STATE ---
+    let game = {
+        money: 0,
+        biomass: 0,
+        harvestMode: 'money', // 'money' or 'biomass'
+        totalMoney: 0,
+        prestige: 0,
+        plots: 0,
+        plotCost: 15,
+        energy: 100,
+        maxEnergy: 100,
+        energyGen: 1,
+        dimIndex: 0,
+        water: 100, // Mars trait
+        cycle: 0, // 0-100 (0-50 Day, 51-100 Night)
+        upgrades: { click: 0, auto: 0, energy: 0, speed: 0, crit: 0, efficiency: 0, max_energy: 0, mycelium: 0, terraforming: 0, gmo: 0 },
+        companions: { drone: 0, fairy: 0, probe: 0 },
+        codex: [] // List of collected rare IDs
+    };
+
+    // Rare Plants Definitions
+    const RARES = [
+        { id: 'gold_leaf', name: 'Feuille Dorée', chance: 0.01, bonus: 0.1, desc: '+10% Production', icon: '🍂' },
+        { id: 'crystal_root', name: 'Racine de Cristal', chance: 0.005, bonus: 0.2, desc: '+20% Production', icon: '💎' },
+        { id: 'void_fruit', name: 'Fruit du Néant', chance: 0.001, bonus: 0.5, desc: '+50% Production', icon: '🌚' }
+    ];
+
+    // --- GRAPHICS ---
+    function initStars() {
+        const bg = document.getElementById('star-bg');
+        for(let i=0; i<150; i++) {
+            let s = document.createElement('div');
+            s.className = 'star';
+            s.style.left = Math.random()*100 + '%';
+            s.style.top = Math.random()*100 + '%';
+            s.style.width = s.style.height = (Math.random()*2 + 1) + 'px';
+            s.style.setProperty('--duration', (Math.random()*3 + 2)+'s');
+            s.style.animationDelay = Math.random()*5 + 's';
+            bg.appendChild(s);
+        }
+    }
+
+    // --- CORE LOGIC ---
+    function getGlobalMultiplier() {
+        let m = 1 + (game.prestige * 0.1);
+        // Add Codex Bonuses
+        game.codex.forEach(id => {
+            let rare = RARES.find(r => r.id === id);
+            if(rare) m += rare.bonus;
+        });
+        return m;
+    }
+
+    function getClickVal() {
+        let dim = CONFIG.dims[game.dimIndex];
+        let base = dim.click + (game.upgrades.click * CONFIG.upgrades.click.effect);
+        return base * getGlobalMultiplier();
+    }
+
+    function getAutoVal() {
+        let dim = CONFIG.dims[game.dimIndex];
+        let base = dim.auto + (game.upgrades.auto * CONFIG.upgrades.auto.effect);
+        // Energy penalty: if 0 energy, 10% efficiency
+        let efficiency = game.energy > 0 ? 1 : 0.1;
+        return base * getGlobalMultiplier() * efficiency;
+    }
+
+    function clickMain(e) {
+        let val = getClickVal();
+
+        // Crit Logic
+        let isCrit = false;
+        if (game.upgrades.crit > 0 && Math.random() < game.upgrades.crit * CONFIG.upgrades.crit.effect) {
+             val *= 3;
+             isCrit = true;
+        }
+
+        game.money += val;
+        game.totalMoney += val;
+        updateUI();
+
+        let txt = isCrit ? `CRIT! +${Math.floor(val)}` : `+${Math.floor(val)}`;
+        let color = isCrit ? '#ff0055' : (game.harvestMode === 'money' ? '#ffd700' : '#bc13fe');
+
+        spawnFloatText(e, txt, color);
+
+        // Anim button
+        let btn = document.getElementById('clicker-btn');
+        btn.style.transform = 'scale(0.95)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 50);
+    }
+
+    function buyPlot() {
+        if(game.money >= game.plotCost) {
+            game.money -= game.plotCost;
+            game.plots++;
+            game.plotCost = Math.floor(game.plotCost * 1.4);
+            addPlotVisual();
+            updateUI();
+            save();
+        }
+    }
+
+    function buyUpgrade(type) {
+        let u = CONFIG.upgrades[type];
+        let lvl = game.upgrades[type];
+        let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+        let currency = u.currency || 'money';
+
+        if(currency === 'money' && game.money >= cost) {
+            game.money -= cost;
+            game.upgrades[type]++;
+            if(type === 'energy') game.energyGen += u.effect;
+            updateUI();
+            updateShopState();
+            save();
+        } else if (currency === 'biomass' && game.biomass >= cost) {
+            game.biomass -= cost;
+            game.upgrades[type]++;
+            updateUI();
+            updateShopState();
+            save();
+        }
+    }
+
+    function buyCompanion(type) {
+        let u = CONFIG.companions[type];
+        let lvl = game.companions[type];
+        let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+        let currency = u.currency || 'money';
+
+        if(currency === 'money' && game.money >= cost) {
+            game.money -= cost;
+            game.companions[type]++;
+            updateUI();
+            updateShopState();
+            spawnCompanionVisual(type);
+            save();
+        } else if (currency === 'biomass' && game.biomass >= cost) {
+            game.biomass -= cost;
+            game.companions[type]++;
+            updateUI();
+            updateShopState();
+            spawnCompanionVisual(type);
+            save();
+        }
+    }
+
+    function toggleMode() {
+        game.harvestMode = game.harvestMode === 'money' ? 'biomass' : 'money';
+        updateUI();
+    }
+
+    function refillWater() {
+        if(game.energy >= 10) {
+            game.energy -= 10;
+            game.water = 100;
+            updateUI();
+        }
+    }
+
+    function travel() {
+        let next = CONFIG.dims[game.dimIndex+1];
+        if(next && game.money >= next.cost) {
+            game.money -= next.cost;
+            game.dimIndex++;
+            updateUI();
+
+            // Visual feedback for travel
+            let ol = document.createElement('div');
+            ol.style.position = 'fixed'; ol.style.top=0; ol.style.left=0; ol.style.width='100%'; ol.style.height='100%';
+            ol.style.background = 'white'; ol.style.zIndex = 1000; ol.style.transition = 'opacity 1s';
+            document.body.appendChild(ol);
+
+            setTimeout(() => { ol.style.opacity = 0; setTimeout(() => ol.remove(), 1000); }, 100);
+
+            save();
+        }
+    }
+
+    // --- AUTOMATION & LOOPS ---
+    function addPlotVisual() {
+        let grid = document.getElementById('farm-grid');
+        let p = document.createElement('div');
+        p.className = 'plot';
+
+        let bar = document.createElement('div');
+        bar.className = 'plant-bar';
+        let dim = CONFIG.dims[game.dimIndex];
+        p.style.setProperty('--plant-color', dim.color);
+
+        let icon = document.createElement('div');
+        icon.className = 'plant-icon';
+        icon.innerText = dim.icon;
+
+        p.appendChild(bar);
+        p.appendChild(icon);
+        grid.appendChild(p);
+
+        runPlot(p, bar, icon);
+    }
+
+    function runPlot(plot, bar, icon) {
+        // Trait Checks
+        let dim = CONFIG.dims[game.dimIndex];
+
+        // Mars Water Check
+        if(dim.trait === 'water') {
+            if(game.water <= 0) {
+                 setTimeout(() => runPlot(plot, bar, icon), 1000); // Wait for water
+                 return;
+            }
+            game.water = Math.max(0, game.water - 0.5); // Consume water
+        }
+
+        // Night Bloom Check (Lune)
+        if(dim.trait === 'night_bloom') {
+            if(game.cycle <= 50) { // If Day
+                 setTimeout(() => runPlot(plot, bar, icon), 1000); // Wait for night
+                 return;
+            }
+        }
+
+        // Reset
+        bar.style.transition = 'none';
+        bar.style.height = '0%';
+        plot.classList.remove('ready');
+        plot.classList.remove('blocked');
+        plot.onclick = null;
+
+        // Force reflow
+        void bar.offsetWidth;
+
+        // Grow Speed Calculation
+        let duration = 3000 * Math.pow(CONFIG.upgrades.speed.effect, game.upgrades.speed);
+
+        // Fairy Bonus
+        if(game.companions.fairy > 0) duration *= (1 - Math.min(0.5, game.companions.fairy * 0.02));
+
+        if(dim.trait === 'gravity') duration *= 2; // Jupiter Slower
+
+        // Nebula: Energy Link (Slow if low energy)
+        if(dim.trait === 'energy_link') {
+            let energyPct = game.energy / Math.max(1, game.maxEnergy);
+            duration = duration / (0.2 + 0.8 * energyPct);
+        }
+
+        // Black Hole: Time Dilation (Super slow)
+        if(dim.trait === 'time_dilation') {
+            duration *= 5;
+        }
+
+        bar.style.transition = `height ${duration}ms linear`;
+        bar.style.height = '100%';
+
+        setTimeout(() => {
+            if(document.body.contains(plot)) {
+
+                // Saturn Asteroid Event
+                if(dim.trait === 'asteroids' && Math.random() < 0.1) {
+                    plot.classList.add('blocked');
+                    plot.innerHTML = '<div style="font-size:30px; text-align:center; padding-top:10px;">☄️</div>';
+                    plot.onclick = () => {
+                        plot.innerHTML = '';
+                        plot.appendChild(bar);
+                        plot.appendChild(icon);
+                        runPlot(plot, bar, icon);
+                    };
+                    return; // Stop loop until clicked
+                }
+
+                // Harvest Logic
+                let baseProd = getAutoVal();
+
+                // Black Hole Bonus (High Reward)
+                if(dim.trait === 'time_dilation') baseProd *= 20;
+
+                // GMO Bonus
+                if(game.upgrades.gmo > 0) baseProd *= (1 + game.upgrades.gmo * CONFIG.upgrades.gmo.effect);
+
+                // Neighbor Bonus (Mycelium)
+                if(game.upgrades.mycelium > 0) {
+                     let networkMult = 1 + (game.plots * CONFIG.upgrades.mycelium.effect * game.upgrades.mycelium);
+                     baseProd *= networkMult;
+                }
+
+                if(game.harvestMode === 'money') {
+                    game.money += baseProd;
+                    game.totalMoney += baseProd;
+                } else {
+                    // Biomass Formula
+                    let bioGain = 1 * (1 + (game.upgrades.terraforming||0) * 0.2);
+                    game.biomass += bioGain;
+                }
+
+                // Check Rare Drop
+                checkRareDrop();
+
+                updateUI();
+
+                // Visual harvest
+                plot.classList.add('ready');
+
+                // Consume Energy (Efficiency Calculation)
+                let energyCost = 0.5 * Math.pow(CONFIG.upgrades.efficiency.effect, game.upgrades.efficiency);
+                game.energy = Math.max(0, game.energy - energyCost);
+
+                // Loop
+                setTimeout(() => runPlot(plot, bar, icon), 500); // 0.5s pause at full
+            }
+        }, duration);
+    }
+
+    function checkRareDrop() {
+        RARES.forEach(rare => {
+            if(!game.codex.includes(rare.id)) {
+                let chance = rare.chance + (game.companions.probe * 0.005);
+                if(Math.random() < chance) {
+                    game.codex.push(rare.id);
+                    alert(`RARE TROUVÉ ! ${rare.icon} ${rare.name}\n${rare.desc}`);
+                    save();
+                }
+            }
+        });
+    }
+
+    // Energy & Cycle Loop
+    setInterval(() => {
+        // Energy
+        if(game.energy < game.maxEnergy) {
+            game.energy = Math.min(game.maxEnergy, game.energy + (game.energyGen/10));
+        }
+
+        // Cycle
+        game.cycle = (game.cycle + 0.1) % 100;
+
+        // Drone Auto Click (every 50 ticks = 5s)
+        if(game.companions.drone > 0 && Math.floor(game.cycle*10) % 50 === 0) {
+             let totalVal = 0;
+             for(let i=0; i<game.companions.drone; i++) {
+                 let val = getClickVal();
+                 totalVal += val;
+             }
+
+             if(totalVal > 0) {
+                 game.money += totalVal;
+                 game.totalMoney += totalVal;
+
+                 // Visual feedback
+                 let clicker = document.getElementById('clicker-btn');
+                 spawnFloatText({ target: clicker }, `+${Math.floor(totalVal)} 🤖`, '#00f3ff');
+             }
+             updateUI();
+        }
+
+        updateUI();
+    }, 100);
+
+    // --- UI & TAB SYSTEM ---
+    let currentTab = 'farm';
+    function switchTab(t) {
+        currentTab = t;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`.tab-btn[onclick="switchTab('${t}')"]`).classList.add('active');
+        renderShopStructure();
+        updateShopState();
+    }
+
+    // Called only on tab switch
+    function renderShopStructure() {
+        const c = document.getElementById('shop-content');
+        c.innerHTML = '';
+
+        if(currentTab === 'farm') {
+            // Plot
+            c.appendChild(createShopItem('plot', 'Acheter Parcelle', 'Augmente la production passive', () => buyPlot()));
+        }
+        else if (currentTab === 'tech') {
+            // Upgrades
+            ['click', 'auto', 'speed', 'crit'].forEach(type => {
+                c.appendChild(createShopItem(`upg-${type}`, '', '', () => buyUpgrade(type)));
+            });
+        }
+        else if (currentTab === 'space') {
+             ['energy', 'efficiency', 'max_energy'].forEach(type => {
+                 c.appendChild(createShopItem(`upg-${type}`, '', '', () => buyUpgrade(type)));
+             });
+
+            // Prestige (Special case, custom HTML)
+            let pDiv = document.createElement('div');
+            pDiv.id = 'prestige-item';
+            pDiv.style.marginTop = "20px";
+            // Initial content
+            pDiv.innerHTML = `<div class="shop-item" id="btn-prestige" style="border-color:#e74c3c">
+                <div class="item-info">
+                    <span class="item-name" style="color:#e74c3c">Ascension (Reset)</span>
+                    <span class="item-desc" id="prestige-desc">...</span>
+                </div>
+            </div>`;
+            c.appendChild(pDiv);
+        }
+        else if (currentTab === 'companions') {
+            ['drone', 'fairy', 'probe'].forEach(type => {
+                c.appendChild(createShopItem(`comp-${type}`, '', '', () => buyCompanion(type)));
+            });
+        }
+        else if (currentTab === 'dna') {
+            ['mycelium', 'terraforming', 'gmo'].forEach(type => {
+                c.appendChild(createShopItem(`upg-${type}`, '', '', () => buyUpgrade(type)));
+            });
+        }
+        else if (currentTab === 'codex') {
+            c.innerHTML = '<h3 style="text-align:center; font-size:1rem;">Collection Galactique</h3>';
+            c.innerHTML += '<div id="codex-list"></div>';
+            renderCodex(); // Static list based on unlocked items
+        }
+    }
+
+    // Called frequently in updateUI
+    function updateShopState() {
+        if(currentTab === 'farm') {
+            updateShopItem('plot', 'Acheter Parcelle', 'Augmente la production passive', game.plotCost, game.money >= game.plotCost);
+        }
+        else if (currentTab === 'tech') {
+            ['click', 'auto', 'speed', 'crit'].forEach(type => {
+                let u = CONFIG.upgrades[type];
+                let lvl = game.upgrades[type];
+                let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+                updateShopItem(`upg-${type}`, `${u.name} (Nv.${lvl})`, u.desc, cost, game.money >= cost);
+            });
+        }
+        else if (currentTab === 'space') {
+             ['energy', 'efficiency', 'max_energy'].forEach(type => {
+                 let u = CONFIG.upgrades[type];
+                 let lvl = game.upgrades[type];
+                 let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+                 updateShopItem(`upg-${type}`, `${u.name} (Nv.${lvl})`, u.desc, cost, game.money >= cost);
+             });
+
+             // Prestige Update
+             let potential = Math.floor(game.totalMoney / 50000);
+             let gain = Math.max(0, potential - game.prestige);
+
+             let btn = document.getElementById('btn-prestige');
+             if(btn) {
+                 document.getElementById('prestige-desc').innerText = `Gagner ${gain} ⭐ (+${gain*10}%)`;
+                 btn.onclick = () => tryPrestige(gain);
+                 if(gain > 0) btn.classList.remove('disabled');
+                 else btn.classList.add('disabled');
+             }
+        }
+        else if (currentTab === 'companions') {
+            ['drone', 'fairy', 'probe'].forEach(type => {
+                let u = CONFIG.companions[type];
+                let lvl = game.companions[type];
+                let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+                let currency = u.currency || 'money';
+                let suffix = currency === 'biomass' ? '🧬' : '💰';
+                let canBuy = currency === 'biomass' ? game.biomass >= cost : game.money >= cost;
+
+                updateShopItem(`comp-${type}`, `${u.name} (Nv.${lvl})`, u.desc, cost + suffix, canBuy);
+            });
+        }
+        else if (currentTab === 'dna') {
+            ['mycelium', 'terraforming', 'gmo'].forEach(type => {
+                let u = CONFIG.upgrades[type];
+                let lvl = game.upgrades[type];
+                let cost = Math.floor(u.base * Math.pow(u.mult, lvl));
+                // Check Biomass
+                let canBuy = game.biomass >= cost;
+                updateShopItem(`upg-${type}`, `${u.name} (Nv.${lvl})`, u.desc, cost + '🧬', canBuy);
+            });
+        }
+        else if (currentTab === 'codex') {
+             // Codex is mostly static but let's refresh list if new item found
+             // Check if list needs update? Simplest is to clear and rebuild codex list as it's not interactive buttons
+             renderCodex();
+        }
+    }
+
+    function createShopItem(id, name, desc, action) {
+        let d = document.createElement('div');
+        d.className = 'shop-item';
+        d.id = `shop-item-${id}`;
+        d.onclick = action;
+        d.innerHTML = `
+            <div class="item-info">
+                <span class="item-name">${name}</span>
+                <span class="item-desc">${desc}</span>
+            </div>
+            <div class="item-cost">...</div>
+        `;
+        return d;
+    }
+
+    function updateShopItem(id, name, desc, cost, enabled) {
+        let d = document.getElementById(`shop-item-${id}`);
+        if(!d) return;
+
+        // Update Text
+        d.querySelector('.item-name').innerText = name;
+        d.querySelector('.item-desc').innerText = desc;
+        // Handle custom currency display
+        if(typeof cost === 'string' && (cost.includes('🧬') || cost.includes('💰'))) {
+            d.querySelector('.item-cost').innerText = cost;
+        } else {
+            d.querySelector('.item-cost').innerText = cost + '💰';
+        }
+
+        // Update State
+        if(enabled) {
+            d.classList.remove('disabled');
+            d.style.pointerEvents = 'auto';
+        } else {
+            d.classList.add('disabled');
+            d.style.pointerEvents = 'none';
+        }
+    }
+
+    function renderCodex() {
+        const list = document.getElementById('codex-list');
+        if(!list) return;
+
+        list.innerHTML = '';
+        if(game.codex.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color:#7f8c8d; padding:20px;">Aucune plante rare découverte... pour l\'instant.</div>';
+        } else {
+            RARES.forEach(rare => {
+                if(game.codex.includes(rare.id)) {
+                     let d = document.createElement('div');
+                     d.className = 'shop-item';
+                     d.style.borderColor = '#f1c40f';
+                     d.innerHTML = `
+                        <div style="font-size:2rem; margin-right:10px;">${rare.icon}</div>
+                        <div class="item-info">
+                            <span class="item-name" style="color:#f1c40f">${rare.name}</span>
+                            <span class="item-desc">${rare.desc}</span>
+                        </div>
+                     `;
+                     list.appendChild(d);
+                }
+            });
+        }
+    }
+
+    function tryPrestige(gain) {
+        if(gain > 0 && confirm("Reset complet pour prestige ?")) {
+            game.prestige += gain;
+            game.money = 0;
+            game.totalMoney = 0;
+            game.plots = 0;
+            game.plotCost = 15;
+            game.energy = 100;
+            game.dimIndex = 0;
+
+            // Reset Upgrades dynamically
+            game.upgrades = {};
+            for(let key in CONFIG.upgrades) {
+                game.upgrades[key] = 0;
+            }
+            game.companions = {};
+            for(let key in CONFIG.companions) {
+                game.companions[key] = 0;
+            }
+
+            // Keep Codex
+
+            save();
+            location.reload();
+        }
+    }
+
+    function updateUI() {
+        // Recalc Max Energy
+        game.maxEnergy = 100 + (game.upgrades.max_energy * CONFIG.upgrades.max_energy.effect);
+
+        document.getElementById('money').innerText = Math.floor(game.money);
+        document.getElementById('biomass').innerText = Math.floor(game.biomass);
+        document.getElementById('energy').innerText = Math.floor(game.energy);
+        document.getElementById('max-energy').innerText = game.maxEnergy;
+        document.getElementById('prestige').innerText = game.prestige;
+        document.getElementById('plot-count').innerText = game.plots;
+
+        // Mars Water Trait
+        let waterPanel = document.getElementById('water-panel');
+        if(CONFIG.dims[game.dimIndex].trait === 'water') {
+            waterPanel.style.display = 'block';
+            document.getElementById('water-level').style.width = game.water + '%';
+        } else {
+            waterPanel.style.display = 'none';
+        }
+
+        // Cycle UI
+        let isNight = game.cycle > 50;
+        document.getElementById('cycle-bar').style.width = game.cycle + '%';
+        document.getElementById('cycle-icon').innerText = isNight ? '🌙' : '☀️';
+        document.getElementById('cycle-text').innerText = isNight ? 'Nuit' : 'Jour';
+        document.getElementById('cycle-text').style.color = isNight ? '#bdc3c7' : '#f1c40f';
+        // Subtle background shift
+        document.getElementById('star-bg').style.opacity = isNight ? 1 : 0.5;
+
+        // Toggle Harvest Mode Visual
+        let modeBtn = document.getElementById('btn-mode');
+        modeBtn.innerText = game.harvestMode === 'money' ? 'Mode: 💰 Crédits' : 'Mode: 🧬 Biomasse';
+        modeBtn.style.borderColor = game.harvestMode === 'money' ? '#f1c40f' : '#8e44ad';
+
+        // Dim
+        let curDim = CONFIG.dims[game.dimIndex];
+        document.getElementById('dim-name').innerText = `(${curDim.name})`;
+        document.getElementById('dim-name').style.color = curDim.color;
+        document.getElementById('current-icon').innerText = curDim.icon;
+
+        let next = CONFIG.dims[game.dimIndex+1];
+        if(next) {
+            document.getElementById('next-dim').innerText = next.name;
+            document.getElementById('dim-cost').innerText = next.cost + '💰';
+            let pct = Math.min(100, (game.money/next.cost)*100);
+            document.getElementById('dim-bar').style.width = pct + '%';
+
+            let btn = document.getElementById('btn-travel');
+            if(game.money >= next.cost) {
+                btn.style.display = 'flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        } else {
+            document.getElementById('next-dim').innerText = "Univers Conquis";
+            document.getElementById('dim-cost').innerText = "";
+            document.getElementById('dim-bar').style.width = '100%';
+        }
+
+        // Refresh Shop State
+        updateShopState();
+    }
+
+    // --- UTILS ---
+    function spawnCompanionVisual(type) {
+        if(type === 'drone') {
+            let container = document.getElementById('drone-orbit-container');
+            if(!container) return;
+
+            let sat = document.createElement('div');
+            sat.className = 'drone-satellite';
+            // Random start pos
+            sat.style.animationDelay = `-${Math.random() * 10}s`;
+            sat.style.animationDuration = `${5 + Math.random() * 5}s`; // Vary speed
+
+            let body = document.createElement('div');
+            body.className = 'drone-body';
+            body.innerText = CONFIG.companions[type].icon;
+            // Sync counter-rotation speed
+            body.style.animationDuration = sat.style.animationDuration;
+
+            sat.appendChild(body);
+            container.appendChild(sat);
+            return;
+        }
+
+        let l = document.getElementById('drone-layer');
+        let el = document.createElement('div');
+        el.className = 'companion-unit';
+        el.innerText = CONFIG.companions[type].icon;
+
+        el.style.left = Math.random() * 90 + '%';
+        el.style.top = Math.random() * 90 + '%';
+
+        l.appendChild(el);
+        animateCompanion(el);
+    }
+
+    function animateCompanion(el) {
+        let x = Math.random() * 90;
+        let y = Math.random() * 90;
+        el.style.left = x + '%';
+        el.style.top = y + '%';
+
+        setTimeout(() => {
+            if(document.body.contains(el)) animateCompanion(el);
+        }, 5000 + Math.random()*2000);
+    }
+
+    function spawnFloatText(e, txt, color) {
+        let el = document.createElement('div');
+        el.className = 'float-text';
+        el.innerText = txt;
+        if(color) el.style.color = color;
+        else el.style.color = '#fff';
+
+        let rect = e.target.getBoundingClientRect();
+        // Random scatter
+        let x = e.clientX || (rect.left + rect.width/2);
+        let y = e.clientY || (rect.top + rect.height/2);
+        x += (Math.random()-0.5)*50;
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+    }
+
+    // --- SAVE ---
+    function save() {
+        localStorage.setItem('cosmicSave', JSON.stringify(game));
+    }
+    function load() {
+        let s = localStorage.getItem('cosmicSave');
+        if(s) {
+            let d = JSON.parse(s);
+            game = { ...game, ...d };
+            // Deep merge fix
+            if(d.upgrades) game.upgrades = { ...game.upgrades, ...d.upgrades };
+            if(!game.codex) game.codex = [];
+        }
+
+        // Restore plots
+        document.getElementById('farm-grid').innerHTML = '';
+        for(let i=0; i<game.plots; i++) addPlotVisual();
+
+        // Restore Companions
+        document.getElementById('drone-layer').innerHTML = '';
+        let orbitContainer = document.getElementById('drone-orbit-container');
+        if(orbitContainer) orbitContainer.innerHTML = '';
+
+        if(game.companions) {
+            for(let key in game.companions) {
+                for(let i=0; i<game.companions[key]; i++) spawnCompanionVisual(key);
+            }
+        }
+    }
+    function resetSave() {
+        localStorage.removeItem('cosmicSave');
+        location.reload();
+    }
+
+    // --- INIT ---
+    initStars();
+    load();
+    renderShopStructure(); // Initial Structure
+    updateUI(); // Updates UI + Shop State
+    setInterval(save, 10000);
+
+</script>
+</body>
+</html>
