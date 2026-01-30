@@ -13,16 +13,9 @@ Un jeu de clicker incrémental sur le thème de l'agriculture spatiale. Commence
 
 ## Structure du Projet
 
-Le projet a été refactorisé pour être modulaire :
+Le projet est contenu dans un fichier unique pour faciliter le déploiement et l'utilisation :
 
-*   `index.html` : Point d'entrée principal.
-*   `style.css` : Styles globaux et animations.
-*   `js/` : Contient la logique du jeu.
-    *   `main.js` : Initialisation du jeu.
-    *   `config.js` : Configuration des planètes, améliorations et plantes rares.
-    *   `state.js` : Gestion de la sauvegarde et de l'état du jeu.
-    *   `game.js` : Boucle de jeu principale et logique métier.
-    *   `ui.js` : Gestion de l'interface utilisateur et des événements.
+*   `index.html` : Contient tout le code (HTML, CSS, JS).
 
 ## Comment Jouer
 
@@ -35,7 +28,7 @@ Le projet a été refactorisé pour être modulaire :
 ## Installation / Développement
 
 Aucune installation npm n'est requise. C'est un projet vanilla JS / HTML / CSS.
-Servez simplement le dossier racine avec un serveur statique (ex: Live Server, `python3 -m http.server`, etc.).
+Il suffit d'ouvrir le fichier `index.html` dans n'importe quel navigateur web moderne.
 
 ---
 *Créé avec ❤️ par Jules.*
