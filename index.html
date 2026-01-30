@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Cosmic Farmer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="star-bg"></div>
+<div id="nebula-bg"></div>
+<div id="drone-layer"></div>
+
+<h1>COSMIC FARMER</h1>
+
+<div id="main-wrapper">
+
+    <!-- LEFT: Player Stats & Clicker -->
+    <div id="col-left" class="panel">
+        <h2>Dashboard</h2>
+
+        <div class="stat-row">
+            <span><span class="stat-icon">💰</span>Crédits</span>
+            <span class="currency" id="money">0</span>
+        </div>
+        <div class="stat-row">
+            <span><span class="stat-icon">🧬</span>Biomasse</span>
+            <span style="color:#bc13fe; font-weight:bold; text-shadow: 0 0 5px #bc13fe;" id="biomass">0</span>
+        </div>
+        <div style="margin-bottom:15px;">
+            <button id="btn-mode" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid #f1c40f; color:white; padding:10px; cursor:pointer; border-radius:5px; font-weight:bold;">Mode: 💰 Crédits</button>
+        </div>
+        <div class="stat-row">
+            <span><span class="stat-icon">⚡</span>Énergie</span>
+            <span><span id="energy">100</span> / <span id="max-energy">100</span></span>
+        </div>
+        <div id="water-panel" style="display:none; margin-bottom:15px;">
+             <div style="font-size:0.9rem; color:#3498db; margin-bottom:5px;">💧 Eau (Mars)</div>
+             <div class="progress-wrap" style="height:8px; margin:5px 0;"><div class="progress-fill" id="water-level" style="background:#3498db; width:100%; box-shadow:none;"></div></div>
+             <button style="width:100%; font-size:0.8rem; background:rgba(52, 152, 219, 0.2); border:1px solid #3498db; color:#3498db; cursor:pointer; padding:5px; border-radius:4px;">Remplir (10⚡)</button>
+        </div>
+        <div class="stat-row" title="Cycle Jour/Nuit">
+            <span><span class="stat-icon" id="cycle-icon">☀️</span>Cycle</span>
+            <span id="cycle-text">Jour</span>
+        </div>
+        <div class="progress-wrap" style="height:6px; margin-bottom:15px; background:rgba(255,255,255,0.1);">
+            <div class="progress-fill" id="cycle-bar" style="background: linear-gradient(90deg, #f39c12, #2c3e50);"></div>
+        </div>
+        <div class="stat-row" title="Bonus Prestige">
+            <span><span class="stat-icon">⭐</span>Prestige</span>
+            <span style="color:#e74c3c; text-shadow: 0 0 5px #e74c3c;" id="prestige">0</span>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+        <div id="clicker-container" style="position:relative;">
+            <div id="drone-orbit-container"></div>
+            <div id="clicker-btn">
+                <span id="current-icon">🌿</span>
+            </div>
+        </div>
+        <div style="text-align:center; color:#7f8c8d; font-size:0.8rem;">Cliquer pour récolter</div>
+    </div>
+
+    <!-- CENTER: Farm Grid -->
+    <div id="col-center" class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>Ferme <span id="dim-name" style="color:var(--color-primary); font-size:1.2rem;">(Terre)</span></h2>
+            <span style="font-size:0.9rem; color:#bdc3c7;"><span id="plot-count">0</span> Parcelles</span>
+        </div>
+
+        <div id="farm-grid">
+            <!-- Plots inserted via JS -->
+        </div>
+    </div>
+
+    <!-- RIGHT: Shop & Upgrades -->
+    <div id="col-right" class="panel">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="farm" onclick="switchTab('farm')">Ferme</button>
+            <button class="tab-btn" data-tab="tech" onclick="switchTab('tech')">Tech</button>
+            <button class="tab-btn" data-tab="space" onclick="switchTab('space')">Espace</button>
+            <button class="tab-btn" data-tab="companions" onclick="switchTab('companions')">Robots</button>
+            <button class="tab-btn" data-tab="dna" onclick="switchTab('dna')">ADN</button>
+            <button class="tab-btn" data-tab="codex" onclick="switchTab('codex')">Codex</button>
+        </div>
+
+        <div id="shop-content">
+            <!-- Dynamic Content -->
+        </div>
+
+        <div id="dim-panel">
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:8px;">
+                <span>Voyage : <span id="next-dim" style="color:var(--color-primary)">Mars</span></span>
+                <span id="dim-cost" style="color:var(--color-accent)">200💰</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" id="dim-bar"></div></div>
+            <button id="btn-travel" class="shop-item" style="width:100%; justify-content:center; background:linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color:#fff; font-weight:bold; display:none; border:none; margin-top:10px; text-shadow:0 0 5px black;">DÉCOLLAGE 🚀</button>
+        </div>
+
+        <div style="margin-top:20px; text-align:center;">
+             <button id="btn-reset-save" style="background:transparent; border:1px solid #c0392b; color:#c0392b; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.7rem; opacity:0.6;">Reset Save</button>
+        </div>
+    </div>
+
+</div>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
